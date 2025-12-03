@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CICD6 - Flask Messages App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        main {
+            padding: 30px;
+        }
+
+        .message-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #4facfe;
+        }
+
+        .message-form h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1em;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .messages-section {
+            margin-top: 30px;
+        }
+
+        .messages-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            text-align: center;
+        }
+
+        .message {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .message:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .message-content {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .message-time {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-align: right;
+            font-style: italic;
+        }
+
+        .no-messages {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-style: italic;
+            font-size: 1.1em;
+        }
+
+        .tech-info {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 5px solid #27ae60;
+        }
+
+        .tech-info h3 {
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+
+        .tech-info p {
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            header {
+                padding: 20px;
+            }
+            
+            header h1 {
+                font-size: 2em;
+            }
+            
+            main {
+                padding: 20px;
+            }
+            
+            .message-form {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 CICD6 Messages App</h1>
+            <p>Flask + PostgreSQL + Podman Containerization</p>
+        </header>
+        
+        <main>
+            <section class="message-form">
+                <h2>✍️ Adaugă un mesaj nou</h2>
+                <form action="{{ url_for('add_message') }}" method="POST">
+                    <div class="form-group">
+                        <label for="content">Mesajul tău:</label>
+                        <textarea 
+                            name="content" 
+                            id="content" 
+                            placeholder="Scrie mesajul tău aici..." 
+                            required
+                        ></textarea>
+                    </div>
+                    <button type="submit" class="btn">Trimite Mesaj</button>
+                </form>
+            </section>
+            
+            <section class="messages-section">
+                <h2>📝 Mesaje</h2>
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="message">
+                            <div class="message-content">{{ message.content }}</div>
+                            <div class="message-time">{{ message.created_at.strftime('%d %B %Y, %H:%M') }}</div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-messages">
+                        Nu există mesaje încă. Fii primul care adaugă un mesaj! 🎉
+                    </div>
+                {% endif %}
+            </section>
+            
+            <section class="tech-info">
+                <h3>🛠️ Tehnologii Folosite</h3>
+                <p><strong>Backend:</strong> Flask (Python)</p>
+                <p><strong>Database:</strong> PostgreSQL</p>
+                <p><strong>Containerization:</strong> Podman (rootless, secure)</p>
+                <p><strong>Orchestration:</strong> Podman Compose</p>
+                <p><strong>Registry:</strong> Docker Hub Compatible</p>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
