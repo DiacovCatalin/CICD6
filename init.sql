@@ -14,10 +14,7 @@ CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at DESC);
 -- Insert some sample messages for testing
 INSERT INTO messages (content) VALUES 
     ('Bun venit la aplicația CICD6! 🎉'),
-    ('Acesta este un mesaj de test din PostgreSQL.'),
-    ('Podman + Flask + PostgreSQL = Combinație excelentă! 🚀'),
-    ('Containerizare securizată fără daemon! 🔒'),
-    ('Aplicație rulează în containere rootless. 🛡️')
+    ('Acesta este un mesaj de test din PostgreSQL.')
 ON CONFLICT DO NOTHING;
 
 -- Create a user for the application (if needed for additional security)
@@ -32,4 +29,5 @@ DO $$
 BEGIN
     RAISE NOTICE 'Database initialized successfully for CICD6 application';
     RAISE NOTICE 'Messages table created with sample data';
+
 END $$;
