@@ -14,7 +14,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
 app.config['DEBUG'] = os.environ.get('DEBUG', 'True').lower() == 'true'
 
 # Database configuration from environment
-DB_HOST = os.environ.get('DB_HOST', 'localhost')
+DB_HOST = os.environ.get('DB_HOST', 'cicd6-db')
 DB_PORT = os.environ.get('DB_PORT', '5432')
 DB_NAME = os.environ.get('DB_NAME', 'messages_db')
 DB_USER = os.environ.get('DB_USER', 'postgres')

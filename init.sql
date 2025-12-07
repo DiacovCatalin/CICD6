@@ -29,5 +29,4 @@ DO $$
 BEGIN
     RAISE NOTICE 'Database initialized successfully for CICD6 application';
     RAISE NOTICE 'Messages table created with sample data';
-
 END $$;

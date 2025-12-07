@@ -9,16 +9,6 @@ Acest proiect demonstrează utilizarea **Docker** pentru containerizarea unei ap
 **Autor:** DiacovCatalin  
 **Tehnologii:** Flask, PostgreSQL, Docker, Docker Compose
 
-## 🖥️ **IMPORTANT: Windows Users**
-
-📖 **For detailed step-by-step Windows instructions, see: [`DOCKER-WINDOWS-WALKTHROUGH.md`](DOCKER-WINDOWS-WALKTHROUGH.md)**
-
-The walkthrough includes:
-- Docker Desktop installation on Windows
-- Detailed explanations of every command
-- Windows-specific troubleshooting
-- Complete guide from zero to Docker Hub
-
 ## 🛠️ Tehnologii Folosite
 
 ### Backend
@@ -40,17 +30,21 @@ The walkthrough includes:
 ```
 CICD6/
 ├── application.py           # Aplicația Flask principală
-├── Dockerfile              # Definiție imagine Docker
+├── Dockerfile              # Definiție imagine Docker pentru Flask
+├── Dockerfile.db           # Definiție imagine Docker pentru PostgreSQL
 ├── requirements.txt        # Dependințe Python
 ├── docker-compose.yml      # Configurare orchestrare
 ├── init.sql               # Script inițializare bază de date
-├── DOCKER-WINDOWS-WALKTHROUGH.md  # Ghid detaliat Windows
+├── .env                   # Variabile de mediu pentru testare locală
+├── .env.compose           # Variabile de mediu pentru docker-compose
+├── Walkthrough.md         # Ghid complet pas cu pas
+├── RESET_DATABASE.md      # Ghid pentru resetarea bazei de date
 ├── templates/
 │   └── index.html         # Template HTML
 └── README.md              # Documentație
 ```
 
-## 🚀 Quick Start (Windows/Linux/macOS)
+## 🚀 Quick Start
 
 ### Prerechizite
 
@@ -65,11 +59,11 @@ CICD6/
    docker-compose version
    ```
 
-### Pași de Rulare
+### Opțiunea 1: Docker Compose (Recomandat)
 
 1. **Clonare repository:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/alephnil/CICD6.git
    cd CICD6
    ```
 
@@ -87,64 +81,93 @@ CICD6/
    docker-compose down
    ```
 
-## 🐳 Comenzi Docker
+### Opțiunea 2: Imagini Docker Individuale
 
-### Construire Imagine
+1. **Build imagini:**
+   ```bash
+   docker build -t alephnil/cicd6-flask-app -f Dockerfile .
+   docker build -t alephnil/cicd6-postgres-db -f Dockerfile.db .
+   ```
+
+2. **Creare rețea:**
+   ```bash
+   docker network create cicd6-network
+   ```
+
+3. **Pornire database:**
+   ```bash
+   docker run -d --name cicd6-db --network cicd6-network -p 5432:5432 -v postgres_data:/var/lib/postgresql/data alephnil/cicd6-postgres-db
+   ```
+
+4. **Așteptare 30 secunde** pentru inițializarea bazei de date
+
+5. **Pornire Flask app:**
+   ```bash
+   docker run -d --name cicd6-app --network cicd6-network -p 5000:5000 alephnil/cicd6-flask-app
+   ```
+
+6. **Accesare aplicație:** http://localhost:5000
+
+## 📦 Imagini Docker Hub
+
+Proiectul include două imagini publice pe Docker Hub:
+
+- **Flask App:** [alephnil/cicd6-flask-app](https://hub.docker.com/r/alephnil/cicd6-flask-app)
+- **PostgreSQL DB:** [alephnil/cicd6-postgres-db](https://hub.docker.com/r/alephnil/cicd6-postgres-db)
+
+### Utilizare imagini din Docker Hub:
+
 ```bash
-docker build -t cicd6-flask-app .
+# Database
+docker run -d --name hub-db --network cicd6-network -p 5432:5432 -v postgres_data:/var/lib/postgresql/data alephnil/cicd6-postgres-db:latest
+
+# Flask app
+docker run -d --name hub-app --network cicd6-network -p 5000:5000 -e DB_HOST=hub-db -e DB_PORT=5432 -e DB_NAME=messages_db -e DB_USER=postgres -e DB_PASSWORD=postgres alephnil/cicd6-flask-app:latest
 ```
 
-### Rulare Container Individual
+## 🐳 Comenzi Docker Utile
+
+### Construire Imagini
 ```bash
-docker run -d --name flask-app -p 5000:5000 cicd6-flask-app
+docker build -t alephnil/cicd6-flask-app -f Dockerfile .
+docker build -t alephnil/cicd6-postgres-db -f Dockerfile.db .
 ```
 
-### Listare Containere
+### Rulare Containere
 ```bash
-docker ps
-docker ps -a  # Toate containerele
+docker run -d --name cicd6-db --network cicd6-network -p 5432:5432 -v postgres_data:/var/lib/postgresql/data alephnil/cicd6-postgres-db
+docker run -d --name cicd6-app --network cicd6-network -p 5000:5000 alephnil/cicd6-flask-app
 ```
 
-### Vizualizare Log-uri
+### Management Containere
 ```bash
-docker logs flask-app
-docker-compose logs app
-docker-compose logs db
+docker ps                    # Listează containere active
+docker ps -a                 # Listează toate containerele
+docker logs cicd6-db         # Vizualizează log-uri database
+docker logs cicd6-app        # Vizualizează log-uri aplicație
+docker stop cicd6-app cicd6-db    # Oprește containere
+docker rm cicd6-app cicd6-db      # Șterge containere
 ```
 
-## 📦 Publicare pe Docker Hub
-
-### 1. Autentificare Docker Hub
+### Management Volume
 ```bash
-docker login docker.io
-```
-
-### 2. Taguire Imagine
-```bash
-docker tag cicd6-flask-app docker.io/DiacovCatalin/cicd6-flask-app:latest
-```
-
-### 3. Publicare
-```bash
-docker push docker.io/DiacovCatalin/cicd6-flask-app:latest
-```
-
-### 4. Verificare
-```bash
-docker pull docker.io/DiacovCatalin/cicd6-flask-app:latest
+docker volume ls             # Listează volume
+docker volume inspect postgres_data  # Inspectează volum
+docker volume rm postgres_data       # Șterge volum
 ```
 
 ## 🔧 Configurare Mediului
 
 ### Variabile de Mediu
-- `DB_HOST` - Host bază de date (default: localhost)
+- `DB_HOST` - Host bază de date (default: cicd6-db)
+- `DB_PORT` - Port bază de date (default: 5432)
 - `DB_NAME` - Nume bază de date (default: messages_db)
 - `DB_USER` - Utilizator PostgreSQL (default: postgres)
 - `DB_PASSWORD` - Parolă PostgreSQL (default: postgres)
 
 ### Volume Persistente
 - `postgres_data` - Date PostgreSQL
-- `app_logs` - Log-uri aplicație
+- Asigură persistența datelor între repornirile containerelor
 
 ## 🛡️ Securitate Docker
 
@@ -153,6 +176,7 @@ docker pull docker.io/DiacovCatalin/cicd6-flask-app:latest
 - Volume pentru persistența datelor
 - Health checks pentru monitorizare
 - Network isolation între servicii
+- Variabile de mediu pentru configurare
 
 ### Avantaje Docker
 - ✅ **Compatibilitate multi-platformă** - Windows, Linux, macOS
@@ -182,10 +206,10 @@ curl http://localhost:5000/health
 ### Log-uri
 ```bash
 # Log-uri aplicație
-docker-compose logs -f app
+docker logs cicd6-app
 
 # Log-uri bază de date
-docker-compose logs -f db
+docker logs cicd6-db
 ```
 
 ## 🔍 Troubleshooting
@@ -194,26 +218,21 @@ docker-compose logs -f db
 
 1. **Port deja folosit:**
    ```bash
-   # Verificare porturi
-   docker ps
-   # Oprire servicii
    docker-compose down
+   docker ps -a
+   docker rm $(docker ps -aq)
    ```
 
 2. **Probleme conectare bază de date:**
    ```bash
-   # Verificare stare database
-   docker-compose logs db
-   # Restart serviciu
+   docker logs cicd6-db
    docker-compose restart db
    ```
 
-3. **Permisiuni volume:**
+3. **Resetare completă baze de date:**
    ```bash
-   # Verificare volume
-   docker volume ls
-   # Ștergere volume
-   docker volume rm cicd6_postgres_data cicd6_app_logs
+   docker-compose down -v
+   docker-compose up --build
    ```
 
 4. **Docker Desktop nu pornește:**
@@ -221,34 +240,21 @@ docker-compose logs -f db
    - Restart Docker Desktop
    - Reinstalează Docker Desktop dacă este necesar
 
-## 🚀 Avansat
+## 📝 Note Importante
 
-### Kubernetes Integration
-```bash
-# Generare YAML Kubernetes
-docker compose convert
-
-# Deploy în Kubernetes
-kubectl apply -f docker-compose.yaml
-```
-
-### Docker Swarm
-```bash
-# Inițializare Swarm
-docker swarm init
-
-# Deploy în Swarm
-docker stack deploy -c docker-compose.yml cicd6
-```
-
-## 📝 Note
-
-- Acest proiect folosește **Docker** pentru compatibilitate maximă cu Windows
+- Acest proiect folosește **Docker** pentru compatibilitate maximă
 - Complet compatibil cu Docker Hub și alte registries
 - Poate fi rulat pe orice sistem cu Docker instalat
 - Suportă atât development cât și production
+- Datele persistă în volume Docker independente de containere
+
+## 📚 Documentație Suplimentară
+
+- **Walkthrough.md** - Ghid complet pas cu pas pentru homework
+- **RESET_DATABASE.md** - Instrucțiuni pentru resetarea bazei de date
+- **Docker Hub** - Imagini publice pentru deployment
 
 ---
 
 **Laborator 6 - Containerizare cu Docker**  
-*Creat de DiacovCatalin © 2024*
+*Creat de DiacovCatalin © 2025*
